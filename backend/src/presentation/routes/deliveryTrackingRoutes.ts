@@ -1,42 +1,63 @@
 import { Router } from "express";
 import { DeliveryTrackingController } from "../controllers/DeliveryTrackingController";
-
-// If you have auth & role middleware, include them here:
-// import { authMiddleware } from "../../middleware/auth";
-// import { requireRole } from "../../middleware/roles";
+import { authenticateUser } from "../middlewares/authenticateUser";
+import { requireRole } from "../middlewares/requireRole";
 
 const router = Router();
 const deliveryTrackingController = new DeliveryTrackingController();
 
 // ----------------------------------------
-// CUSTOMER – Get their own tracking info
-// GET /api/delivery-tracking/track/:vehicleId
+// STAFF – Create tracking record for a pre-order/import
+// POST /api/delivery-tracking
+// ----------------------------------------
+router.post(
+    "/",
+    authenticateUser,
+    requireRole("SALES_STAFF", "MANAGER", "ADMIN"),
+    deliveryTrackingController.createTrackingRecord
+);
+
+// ----------------------------------------
+// CUSTOMER – Get tracking info via vehicle ID
+// GET /api/delivery-tracking/track/vehicle/:vehicleId
 // ----------------------------------------
 router.get(
-    "/track/:vehicleId",
-    // authMiddleware,  // ← uncomment if needed
-    deliveryTrackingController.trackMyVehicle
+    "/track/vehicle/:vehicleId",
+    authenticateUser,
+    requireRole("CUSTOMER", "SALES_STAFF", "MANAGER", "ADMIN"),
+    deliveryTrackingController.trackByVehicle
+);
+
+// ----------------------------------------
+// CUSTOMER – Get tracking info via order ID
+// GET /api/delivery-tracking/track/order/:orderId
+// ----------------------------------------
+router.get(
+    "/track/order/:orderId",
+    authenticateUser,
+    requireRole("CUSTOMER", "SALES_STAFF", "MANAGER", "ADMIN"),
+    deliveryTrackingController.trackByOrder
 );
 
 // ----------------------------------------
 // STAFF/MANAGER – Update tracking status
-// PUT /api/delivery-tracking/update/:vehicleId
+// PUT /api/delivery-tracking/update
 // ----------------------------------------
 router.put(
-    "/update/:vehicleId",
-    // authMiddleware,
-    // requireRole("staff", "manager", "admin"),
+    "/update",
+    authenticateUser,
+    requireRole("SALES_STAFF", "MANAGER", "ADMIN"),
     deliveryTrackingController.updateTrackingStatus
 );
 
 // ----------------------------------------
-// ADMIN – View ALL tracking info
+// STAFF/MANAGER – View ALL tracking info
 // GET /api/delivery-tracking/
 // ----------------------------------------
 router.get(
     "/",
-    // authMiddleware,
-    // requireRole("admin"),
+    authenticateUser,
+    requireRole("SALES_STAFF", "MANAGER", "ADMIN"),
     deliveryTrackingController.getAllTracking
 );
 

@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
 import { MongoOrderRepository } from '../../infrastructure/database/repositories/MongoOrderRepository';
+import { MongoDeliveryTrackingRepository } from '../../infrastructure/database/repositories/MongoDeliveryTrackingRepository';
 
 import { CreateOrderUseCase } from '../../application/usecases/order/CreateOrderUseCase';
 import { GetOrderByIdUseCase } from '../../application/usecases/order/GetOrderByIdUseCase';
 import { GetOrdersByCustomerUseCase } from '../../application/usecases/order/GetOrdersByCustomerUseCase';
 import { UpdateOrderStatusUseCase } from '../../application/usecases/order/UpdateOrderStatusUseCase';
+import { CreateDeliveryTrackingUseCase } from '../../application/usecases/delivery/CreateDeliveryTrackingUseCase';
 import { logAudit } from '../../shared/services/auditLogger';
 
 const repo = new MongoOrderRepository();
+const deliveryRepo = new MongoDeliveryTrackingRepository();
 
 export class OrderController {
 
@@ -19,6 +22,22 @@ export class OrderController {
                 vehicleId: req.body.vehicleId,
                 notes: req.body.notes,
                 status: 'PENDING'
+            });
+
+            const trackingUseCase = new CreateDeliveryTrackingUseCase(deliveryRepo);
+            await trackingUseCase.execute({
+                orderId: created.id ?? (created as any)._id,
+                vehicleId: created.vehicleId,
+                customerId: created.customerId,
+                currentStatus: "PURCHASED_FROM_AUCTION",
+                statusTimeline: [
+                    {
+                        status: "PURCHASED_FROM_AUCTION",
+                        date: new Date().toISOString(),
+                        notes: "Shipping initiated after order creation",
+                        updatedBy: req.user!.userId
+                    }
+                ]
             });
 
             await logAudit({
