@@ -1,0 +1,19 @@
+declare global {
+    namespace Express {
+        interface Request {
+            user?: {
+                userId: string;
+                email: string;
+                role: string;
+            };
+
+            file?: Express.Multer.File;
+            files?: Express.Multer.File[];
+        }
+    }
+}
+
+export {};
+
+
+
