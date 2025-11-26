@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { connectDB } from './infrastructure/database/config/db';
+import { corsMiddleware } from './shared/middleware/corsMiddleware';
 
 import authRoutes from './presentation/routes/authRoutes';
 import vehicleRoutes from './presentation/routes/vehicleRoutes';
@@ -22,6 +23,7 @@ dotenv.config();
 
 const app: Express = express();
 app.use(express.json());
+app.use(corsMiddleware);
 
 connectDB();
 
