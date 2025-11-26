@@ -22,6 +22,10 @@ export class LoginUserUseCase {
             throw new AppError('Invalid email or password', 401);
         }
 
+        if (user.isActive === false) {
+            throw new AppError('Account is deactivated', 403);
+        }
+
         const isValid = await comparePasswords(data.password, user.password);
 
         if (!isValid) {
