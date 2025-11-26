@@ -11,7 +11,7 @@ router.get(
     "/order/:orderId",
     authenticateUser,
     requireRole("CUSTOMER"),
-    deliveryTrackingController.getTrackingByOrder
+    (req, res) => deliveryTrackingController.getTrackingByOrder(req, res)
 );
 
 // STAFF/MANAGER – Update tracking status
@@ -19,7 +19,7 @@ router.put(
     "/status/:trackingId",
     authenticateUser,
     requireRole("SALES_STAFF", "MANAGER", "ADMIN"),
-    deliveryTrackingController.updateStatus
+    (req, res) => deliveryTrackingController.updateStatus(req, res)
 );
 
 // STAFF/MANAGER – Create tracking entry for an order
@@ -27,7 +27,7 @@ router.post(
     "/",
     authenticateUser,
     requireRole("SALES_STAFF", "MANAGER", "ADMIN"),
-    deliveryTrackingController.create
+    (req, res) => deliveryTrackingController.create(req, res)
 );
 
 // ADMIN – View ALL tracking info
@@ -35,7 +35,7 @@ router.get(
     "/",
     authenticateUser,
     requireRole("ADMIN", "MANAGER"),
-    deliveryTrackingController.getAllTracking
+    (req, res) => deliveryTrackingController.getAllTracking(req, res)
 );
 
 export default router;
