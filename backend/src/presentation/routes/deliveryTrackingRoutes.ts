@@ -9,10 +9,10 @@ const router = Router();
 
 // ----------------------------------------
 // CUSTOMER – Get their own tracking info
-// GET /api/delivery-tracking/track
+// GET /api/delivery-tracking/track/:vehicleId
 // ----------------------------------------
 router.get(
-    "/track",
+    "/track/:vehicleId",
     // authMiddleware,  // ← uncomment if needed
     DeliveryTrackingController.trackMyVehicle
 );
