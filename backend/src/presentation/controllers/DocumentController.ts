@@ -44,6 +44,17 @@ export class DocumentController {
     // ---------------------------------------------------------
     // GET DOCUMENTS BY OWNER (Customer OR Admin/Staff)
     // ---------------------------------------------------------
+    static async getMyDocuments(req: Request, res: Response) {
+        try {
+            const useCase = new GetDocumentsByOwnerUseCase(repo);
+            const docs = await useCase.execute("CUSTOMER", req.user!.userId);
+
+            res.json(docs);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
     static async getByOwner(req: Request, res: Response) {
         try {
             const { ownerType, ownerId } = req.params;

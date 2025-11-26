@@ -14,7 +14,7 @@ export class ReservationController {
         const useCase = new CreateReservationUseCase(repo);
 
         const reservation = await useCase.execute({
-            customerId: req.user.userId,
+            customerId: req.user!.userId,
             vehicleId: req.body.vehicleId,
             notes: req.body.notes,
             status: 'PENDING'
@@ -25,7 +25,7 @@ export class ReservationController {
 
     static async getMyReservations(req: Request, res: Response) {
         const useCase = new GetReservationsByCustomerUseCase(repo);
-        const reservations = await useCase.execute(req.user.userId);
+        const reservations = await useCase.execute(req.user!.userId);
         res.json(reservations);
     }
 
