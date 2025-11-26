@@ -14,6 +14,7 @@ import documentRoutes from "./presentation/routes/documentRoutes";
 import invoiceRoutes from "./presentation/routes/invoiceRoutes";
 import adminDashboardRoutes from "./presentation/routes/adminDashboardRoutes";
 import reportRoutes from "./presentation/routes/reportRoutes";
+import customerProfileRoutes from "./presentation/routes/customerProfileRoutes";
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use("/api/documents", documentRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/admin/dashboard", adminDashboardRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/customer-profile", customerProfileRoutes);
 
 export default app;
 
