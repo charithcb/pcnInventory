@@ -13,6 +13,7 @@ import deliveryTrackingRoutes from './presentation/routes/deliveryTrackingRoutes
 import documentRoutes from "./presentation/routes/documentRoutes";
 import invoiceRoutes from "./presentation/routes/invoiceRoutes";
 import adminDashboardRoutes from "./presentation/routes/adminDashboardRoutes";
+import reportRoutes from "./presentation/routes/reportRoutes";
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use("/api/delivery-tracking", deliveryTrackingRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/admin/dashboard", adminDashboardRoutes);
+app.use("/api/reports", reportRoutes);
 
 export default app;
 
