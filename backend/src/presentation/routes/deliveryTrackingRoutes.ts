@@ -1,42 +1,41 @@
 import { Router } from "express";
 import { DeliveryTrackingController } from "../controllers/DeliveryTrackingController";
-
-// If you have auth & role middleware, include them here:
-// import { authMiddleware } from "../../middleware/auth";
-// import { requireRole } from "../../middleware/roles";
+import { authenticateUser } from "../middlewares/authenticateUser";
+import { requireRole } from "../middlewares/requireRole";
 
 const router = Router();
+const deliveryTrackingController = new DeliveryTrackingController();
 
-// ----------------------------------------
-// CUSTOMER – Get their own tracking info
-// GET /api/delivery-tracking/track/:vehicleId
-// ----------------------------------------
+// CUSTOMER – Get tracking for THEIR order
 router.get(
-    "/track/:vehicleId",
-    // authMiddleware,  // ← uncomment if needed
-    DeliveryTrackingController.trackMyVehicle
+    "/order/:orderId",
+    authenticateUser,
+    requireRole("CUSTOMER"),
+    deliveryTrackingController.getTrackingByOrder
 );
 
-// ----------------------------------------
 // STAFF/MANAGER – Update tracking status
-// PUT /api/delivery-tracking/update/:vehicleId
-// ----------------------------------------
 router.put(
-    "/update/:vehicleId",
-    // authMiddleware,
-    // requireRole("staff", "manager", "admin"),
-    DeliveryTrackingController.updateTrackingStatus
+    "/status/:trackingId",
+    authenticateUser,
+    requireRole("SALES_STAFF", "MANAGER", "ADMIN"),
+    deliveryTrackingController.updateStatus
 );
 
-// ----------------------------------------
+// STAFF/MANAGER – Create tracking entry for an order
+router.post(
+    "/",
+    authenticateUser,
+    requireRole("SALES_STAFF", "MANAGER", "ADMIN"),
+    deliveryTrackingController.create
+);
+
 // ADMIN – View ALL tracking info
-// GET /api/delivery-tracking/
-// ----------------------------------------
 router.get(
     "/",
-    // authMiddleware,
-    // requireRole("admin"),
-    DeliveryTrackingController.getAllTracking
+    authenticateUser,
+    requireRole("ADMIN", "MANAGER"),
+    deliveryTrackingController.getAllTracking
 );
 
 export default router;
