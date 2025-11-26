@@ -9,5 +9,6 @@ export interface IVehicleRepository {
 
     // 🔥 Add this
     filter(query: any): Promise<Vehicle[]>;
+    findLowStock(threshold: number): Promise<Vehicle[]>;
 }
 

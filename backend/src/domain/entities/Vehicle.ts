@@ -6,6 +6,11 @@ export interface Vehicle {
     color?: string;
     mileage?: number;
     price?: number;
+    stock?: number;
+    purchaseCost?: number;
+    sellingPrice?: number;
+    category?: 'SUV' | 'SEDAN' | 'HYBRID' | 'ELECTRIC';
+    lastUpdatedBy?: string;
     status?: 'AVAILABLE' | 'RESERVED' | 'SOLD';
     createdAt?: Date;
     updatedAt?: Date;

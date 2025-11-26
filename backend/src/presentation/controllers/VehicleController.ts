@@ -7,6 +7,9 @@ import { DeleteVehicleUseCase } from '../../application/usecases/vehicle/DeleteV
 import { GetVehicleByIdUseCase } from '../../application/usecases/vehicle/GetVehicleByIdUseCase';
 import { GetAllVehiclesUseCase } from '../../application/usecases/vehicle/GetAllVehiclesUseCase';
 import { FilterVehiclesUseCase } from '../../application/usecases/vehicle/FilterVehiclesUseCase';
+import { UpdateVehicleAvailabilityUseCase } from '../../application/usecases/vehicle/UpdateVehicleAvailabilityUseCase';
+import { UpdateVehicleStockUseCase } from '../../application/usecases/vehicle/UpdateVehicleStockUseCase';
+import { GetLowStockVehiclesUseCase } from '../../application/usecases/vehicle/GetLowStockVehiclesUseCase';
 
 export class VehicleController {
 
@@ -18,7 +21,10 @@ export class VehicleController {
             const repo = new MongoVehicleRepository();
             const useCase = new CreateVehicleUseCase(repo);
 
-            const vehicle = await useCase.execute(req.body);
+            const vehicle = await useCase.execute({
+                ...req.body,
+                lastUpdatedBy: req.user?.userId
+            });
             res.status(201).json(vehicle);
         } catch (error: any) {
             res.status(400).json({ message: error.message });
@@ -63,7 +69,10 @@ export class VehicleController {
             const repo = new MongoVehicleRepository();
             const useCase = new UpdateVehicleUseCase(repo);
 
-            const updated = await useCase.execute(req.params.id, req.body);
+            const updated = await useCase.execute(req.params.id, {
+                ...req.body,
+                lastUpdatedBy: req.user?.userId
+            });
             res.json(updated);
         } catch (error: any) {
             res.status(400).json({ message: error.message });
@@ -86,6 +95,36 @@ export class VehicleController {
     }
 
     // -------------------------------------------
+    //  UPDATE VEHICLE AVAILABILITY
+    // -------------------------------------------
+    static async updateAvailability(req: Request, res: Response) {
+        try {
+            const repo = new MongoVehicleRepository();
+            const useCase = new UpdateVehicleAvailabilityUseCase(repo);
+
+            const updated = await useCase.execute(req.params.id, req.body.status, req.user?.userId);
+            res.json(updated);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
+    // -------------------------------------------
+    //  UPDATE VEHICLE STOCK
+    // -------------------------------------------
+    static async updateStock(req: Request, res: Response) {
+        try {
+            const repo = new MongoVehicleRepository();
+            const useCase = new UpdateVehicleStockUseCase(repo);
+
+            const updated = await useCase.execute(req.params.id, Number(req.body.stock), req.user?.userId);
+            res.json(updated);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
+    // -------------------------------------------
     //  FILTER / SEARCH / SORT VEHICLES (Public)
     // -------------------------------------------
     static async filter(req: Request, res: Response) {
@@ -95,12 +134,14 @@ export class VehicleController {
 
             // ---- BUILD QUERY OBJECT ----
             const query: any = {};
+            const andConditions: any[] = [];
 
             // Exact filters
             if (req.query.make) query.make = req.query.make;
             if (req.query.model) query.model = req.query.model;
             if (req.query.color) query.color = req.query.color;
             if (req.query.status) query.status = req.query.status;
+            if (req.query.category) query.category = req.query.category;
 
             // Year range
             if (req.query.minYear || req.query.maxYear) {
@@ -111,9 +152,27 @@ export class VehicleController {
 
             // Price range
             if (req.query.minPrice || req.query.maxPrice) {
-                query.price = {};
-                if (req.query.minPrice) query.price.$gte = Number(req.query.minPrice);
-                if (req.query.maxPrice) query.price.$lte = Number(req.query.maxPrice);
+                const minPrice = req.query.minPrice ? Number(req.query.minPrice) : undefined;
+                const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : undefined;
+
+                const priceCondition = {
+                    $or: [
+                        {
+                            price: {
+                                ...(minPrice !== undefined ? { $gte: minPrice } : {}),
+                                ...(maxPrice !== undefined ? { $lte: maxPrice } : {}),
+                            }
+                        },
+                        {
+                            sellingPrice: {
+                                ...(minPrice !== undefined ? { $gte: minPrice } : {}),
+                                ...(maxPrice !== undefined ? { $lte: maxPrice } : {}),
+                            }
+                        }
+                    ]
+                };
+
+                andConditions.push(priceCondition);
             }
 
             // Mileage range
@@ -125,10 +184,16 @@ export class VehicleController {
 
             // Text Search (make/model)
             if (req.query.search) {
-                query.$or = [
-                    { make: { $regex: req.query.search, $options: 'i' } },
-                    { model: { $regex: req.query.search, $options: 'i' } }
-                ];
+                andConditions.push({
+                    $or: [
+                        { make: { $regex: req.query.search, $options: 'i' } },
+                        { model: { $regex: req.query.search, $options: 'i' } }
+                    ]
+                });
+            }
+
+            if (andConditions.length > 0) {
+                query.$and = andConditions;
             }
 
             // Execute filter
@@ -139,10 +204,10 @@ export class VehicleController {
 
             switch (req.query.sort) {
                 case 'price_asc':
-                    sorted = results.sort((a: any, b: any) => a.price - b.price);
+                    sorted = results.sort((a: any, b: any) => (a.sellingPrice ?? a.price ?? 0) - (b.sellingPrice ?? b.price ?? 0));
                     break;
                 case 'price_desc':
-                    sorted = results.sort((a: any, b: any) => b.price - a.price);
+                    sorted = results.sort((a: any, b: any) => (b.sellingPrice ?? b.price ?? 0) - (a.sellingPrice ?? a.price ?? 0));
                     break;
                 case 'year_asc':
                     sorted = results.sort((a: any, b: any) => a.year - b.year);
@@ -154,6 +219,22 @@ export class VehicleController {
 
             res.json(sorted);
 
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
+    // -------------------------------------------
+    //  LOW STOCK ALERTS
+    // -------------------------------------------
+    static async lowStock(req: Request, res: Response) {
+        try {
+            const repo = new MongoVehicleRepository();
+            const useCase = new GetLowStockVehiclesUseCase(repo);
+
+            const threshold = req.query.threshold ? Number(req.query.threshold) : 3;
+            const vehicles = await useCase.execute(threshold);
+            res.json({ threshold, vehicles });
         } catch (error: any) {
             res.status(400).json({ message: error.message });
         }

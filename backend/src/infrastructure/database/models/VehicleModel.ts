@@ -13,6 +13,15 @@ const VehicleSchema = new Schema(
         color: { type: String },
         mileage: { type: Number },
         price: { type: Number },
+        stock: { type: Number, default: 0 },
+        purchaseCost: { type: Number },
+        sellingPrice: { type: Number },
+        category: {
+            type: String,
+            enum: ['SUV', 'SEDAN', 'HYBRID', 'ELECTRIC'],
+            default: 'SEDAN'
+        },
+        lastUpdatedBy: { type: String },
         status: {
             type: String,
             enum: ['AVAILABLE', 'RESERVED', 'SOLD'],
