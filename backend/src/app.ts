@@ -11,6 +11,8 @@ import notificationRoutes from './presentation/routes/notificationRoutes';
 import appointmentRoutes from './presentation/routes/appointmentRoutes';
 import deliveryTrackingRoutes from './presentation/routes/deliveryTrackingRoutes';
 import documentRoutes from "./presentation/routes/documentRoutes";
+import invoiceRoutes from "./presentation/routes/invoiceRoutes";
+import adminDashboardRoutes from "./presentation/routes/adminDashboardRoutes";
 
 dotenv.config();
 
@@ -33,6 +35,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use("/api/delivery-tracking", deliveryTrackingRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/invoices", invoiceRoutes);
+app.use("/api/admin/dashboard", adminDashboardRoutes);
 
 export default app;
 
