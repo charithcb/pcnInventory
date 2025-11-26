@@ -3,6 +3,7 @@ import { MongoDeliveryTrackingRepository } from "../../infrastructure/database/r
 
 import { GetTrackingForCustomerUseCase } from "../../application/usecases/delivery/GetTrackingForCustomerUseCase";
 import { UpdateTrackingStatusUseCase } from "../../application/usecases/delivery/UpdateTrackingStatusUseCase";
+import { logAudit } from "../../shared/services/auditLogger";
 
 const repo = new MongoDeliveryTrackingRepository();
 
@@ -63,6 +64,16 @@ export class DeliveryTrackingController {
 
             const updated = await useCase.execute(vehicleId, status, notes, userId);
             res.json(updated);
+
+            await logAudit({
+                action: 'TRACKING_STATUS_CHANGED',
+                userId,
+                entityType: 'DELIVERY_TRACKING',
+                entityId: vehicleId,
+                success: true,
+                description: `Tracking status updated to ${status}`,
+                metadata: { notes }
+            });
 
         } catch (error) {
             console.error("updateTrackingStatus error:", error);

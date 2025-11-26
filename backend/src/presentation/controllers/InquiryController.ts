@@ -5,6 +5,7 @@ import { CreateInquiryUseCase } from "../../application/usecases/inquiry/CreateI
 import { GetMyInquiriesUseCase } from "../../application/usecases/inquiry/GetMyInquiriesUseCase";
 import { GetAllInquiriesUseCase } from "../../application/usecases/inquiry/GetAllInquiriesUseCase";
 import { CloseInquiryUseCase } from "../../application/usecases/inquiry/CloseInquiryUseCase";
+import { logAudit } from "../../shared/services/auditLogger";
 
 const inquiryRepo = new MongoInquiryRepository();
 const notificationRepo = new MongoNotificationRepository();
@@ -19,6 +20,16 @@ export class InquiryController {
                 subject: req.body.subject,
                 message: req.body.message,
                 status: "OPEN",
+            });
+
+            await logAudit({
+                action: 'INQUIRY_STATUS_CHANGED',
+                userId: req.user!.userId,
+                entityType: 'INQUIRY',
+                entityId: inquiry.id,
+                success: true,
+                description: `Inquiry ${inquiry.id} created`,
+                metadata: { status: inquiry.status }
             });
             res.status(201).json(inquiry);
         } catch (error) {
@@ -55,6 +66,16 @@ export class InquiryController {
             const useCase = new CloseInquiryUseCase(inquiryRepo, notificationRepo);
             const updated = await useCase.execute(req.params.id, req.user!.userId);
             res.json(updated);
+
+            await logAudit({
+                action: 'INQUIRY_STATUS_CHANGED',
+                userId: req.user!.userId,
+                entityType: 'INQUIRY',
+                entityId: req.params.id,
+                success: true,
+                description: `Inquiry ${req.params.id} closed`,
+                metadata: { status: 'CLOSED' }
+            });
         } catch (error) {
             res.status(400).json({ error: "Failed to update status" });
         }

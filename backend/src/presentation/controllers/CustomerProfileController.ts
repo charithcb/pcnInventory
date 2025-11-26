@@ -15,6 +15,7 @@ import { GetCustomerHistoryUseCase } from "../../application/usecases/customerPr
 import { UpdateNotificationSettingsUseCase } from "../../application/usecases/customerProfile/UpdateNotificationSettingsUseCase";
 import { UploadDocumentUseCase } from "../../application/usecases/document/UploadDocumentUseCase";
 import { GetDocumentsByOwnerUseCase } from "../../application/usecases/document/GetDocumentsByOwnerUseCase";
+import { logAudit } from "../../shared/services/auditLogger";
 
 const profileRepo = new MongoCustomerProfileRepository();
 const userRepo = new MongoUserRepository();
@@ -47,6 +48,15 @@ export class CustomerProfileController {
                 email: req.body.email,
                 phone: req.body.phone,
                 address: req.body.address
+            });
+
+            await logAudit({
+                action: 'CUSTOMER_RECORD_UPDATED',
+                userId: req.user!.userId,
+                entityType: 'CUSTOMER_PROFILE',
+                entityId: profile.id,
+                success: true,
+                description: `Customer profile updated for ${profile.name}`
             });
 
             res.json(profile);
@@ -132,6 +142,16 @@ export class CustomerProfileController {
                 url: `/uploads/${file.filename}`,
                 uploadedBy: req.user!.userId,
                 verified: false
+            });
+
+            await logAudit({
+                action: 'DOCUMENT_UPLOADED',
+                userId: req.user!.userId,
+                entityType: 'DOCUMENT',
+                entityId: document.id,
+                success: true,
+                description: `Customer document ${document.filename} uploaded`,
+                metadata: { type: document.type }
             });
 
             res.status(201).json(document);

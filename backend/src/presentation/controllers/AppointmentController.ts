@@ -8,6 +8,7 @@ import { GetAllAppointmentsUseCase } from '../../application/usecases/appointmen
 import { UpdateAppointmentStatusUseCase } from '../../application/usecases/appointment/UpdateAppointmentStatusUseCase';
 
 import { Appointment } from '../../domain/entities/Appointment';
+import { logAudit } from '../../shared/services/auditLogger';
 
 const repo = new MongoAppointmentRepository();
 
@@ -24,6 +25,16 @@ export class AppointmentController {
                 time: req.body.time,
                 notes: req.body.notes,
                 status: 'PENDING'
+            });
+
+            await logAudit({
+                action: 'APPOINTMENT_UPDATED',
+                userId: req.user!.userId,
+                entityType: 'APPOINTMENT',
+                entityId: appointment.id,
+                success: true,
+                description: `Appointment ${appointment.id} created`,
+                metadata: { status: appointment.status }
             });
 
             res.status(201).json(appointment);
@@ -70,6 +81,15 @@ export class AppointmentController {
             }
 
             res.json(updated);
+
+            await logAudit({
+                action: 'APPOINTMENT_UPDATED',
+                userId: req.user!.userId,
+                entityType: 'APPOINTMENT',
+                entityId: id,
+                success: true,
+                description: `Appointment ${id} status updated to ${status}`
+            });
         } catch (error: any) {
             res.status(400).json({ message: error.message });
         }
