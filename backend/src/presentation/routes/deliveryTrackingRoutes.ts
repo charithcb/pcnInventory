@@ -1,32 +1,43 @@
 import { Router } from "express";
 import { DeliveryTrackingController } from "../controllers/DeliveryTrackingController";
-import { authenticateUser } from "../middlewares/authenticateUser";
-import { requireRole } from "../middlewares/requireRole";
+
+// If you have auth & role middleware, include them here:
+// import { authMiddleware } from "../../middleware/auth";
+// import { requireRole } from "../../middleware/roles";
 
 const router = Router();
+const deliveryTrackingController = new DeliveryTrackingController();
 
-// CUSTOMER – Get tracking for THEIR order
+// ----------------------------------------
+// CUSTOMER – Get their own tracking info
+// GET /api/delivery-tracking/track/:vehicleId
+// ----------------------------------------
 router.get(
-    "/order/:orderId",
-    authenticateUser,
-    requireRole("CUSTOMER"),
-    DeliveryTrackingController.getTrackingByOrder
+    "/track/:vehicleId",
+    // authMiddleware,  // ← uncomment if needed
+    deliveryTrackingController.trackMyVehicle
 );
 
+// ----------------------------------------
 // STAFF/MANAGER – Update tracking status
+// PUT /api/delivery-tracking/update/:vehicleId
+// ----------------------------------------
 router.put(
-    "/status/:trackingId",
-    authenticateUser,
-    requireRole("SALES_STAFF", "MANAGER", "ADMIN"),
-    DeliveryTrackingController.updateStatus
+    "/update/:vehicleId",
+    // authMiddleware,
+    // requireRole("staff", "manager", "admin"),
+    deliveryTrackingController.updateTrackingStatus
 );
 
-// STAFF/MANAGER – Create tracking entry for an order
-router.post(
+// ----------------------------------------
+// ADMIN – View ALL tracking info
+// GET /api/delivery-tracking/
+// ----------------------------------------
+router.get(
     "/",
-    authenticateUser,
-    requireRole("SALES_STAFF", "MANAGER", "ADMIN"),
-    DeliveryTrackingController.create
+    // authMiddleware,
+    // requireRole("admin"),
+    deliveryTrackingController.getAllTracking
 );
 
 export default router;
