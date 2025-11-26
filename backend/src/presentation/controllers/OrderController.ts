@@ -13,7 +13,7 @@ export class OrderController {
     static async create(req: Request, res: Response) {
         const useCase = new CreateOrderUseCase(repo);
         const created = await useCase.execute({
-            customerId: req.user.userId,
+            customerId: req.user!.userId,
             vehicleId: req.body.vehicleId,
             notes: req.body.notes,
             status: 'PENDING'
@@ -29,7 +29,7 @@ export class OrderController {
 
     static async getCustomerOrders(req: Request, res: Response) {
         const useCase = new GetOrdersByCustomerUseCase(repo);
-        const orders = await useCase.execute(req.user.userId);
+        const orders = await useCase.execute(req.user!.userId);
         res.json(orders);
     }
 
