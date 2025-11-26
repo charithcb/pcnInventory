@@ -11,7 +11,7 @@ export class DeliveryTrackingController {
     // CUSTOMER – Track their vehicle
     // GET /api/delivery-tracking/track/:vehicleId
     // -----------------------------------------------------
-    static async trackMyVehicle(req: Request, res: Response): Promise<void> {
+    async trackMyVehicle(req: Request, res: Response): Promise<void> {
         try {
             const useCase = new GetTrackingForCustomerUseCase(repo);
 
@@ -42,7 +42,7 @@ export class DeliveryTrackingController {
     // PUT /api/delivery-tracking/update/:vehicleId
     // body: { status: "ON_FREIGHT" | "ON_THE_WAY" | ... }
     // -----------------------------------------------------
-    static async updateTrackingStatus(req: Request, res: Response): Promise<void> {
+    async updateTrackingStatus(req: Request, res: Response): Promise<void> {
         try {
             const useCase = new UpdateTrackingStatusUseCase(repo);
 
@@ -75,7 +75,7 @@ export class DeliveryTrackingController {
     // ADMIN/MANAGER – View ALL tracking data
     // GET /api/delivery-tracking/
     // -----------------------------------------------------
-    static async getAllTracking(_req: Request, res: Response): Promise<void> {
+    async getAllTracking(_req: Request, res: Response): Promise<void> {
         try {
             // ✅ Use existing repository method
             const all = await repo.findAll();
