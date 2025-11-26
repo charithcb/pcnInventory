@@ -34,4 +34,9 @@ export class MongoVehicleRepository implements IVehicleRepository {
         return vehicles.map(v => v.toObject());
     }
 
+    async findLowStock(threshold: number): Promise<Vehicle[]> {
+        const vehicles = await VehicleModel.find({ stock: { $lte: threshold } });
+        return vehicles.map(v => v.toObject());
+    }
+
 }
