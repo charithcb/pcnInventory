@@ -6,6 +6,7 @@ import { DeliveryTrackingController } from "../controllers/DeliveryTrackingContr
 // import { requireRole } from "../../middleware/roles";
 
 const router = Router();
+const deliveryTrackingController = new DeliveryTrackingController();
 
 // ----------------------------------------
 // CUSTOMER – Get their own tracking info
@@ -14,7 +15,7 @@ const router = Router();
 router.get(
     "/track/:vehicleId",
     // authMiddleware,  // ← uncomment if needed
-    DeliveryTrackingController.trackMyVehicle
+    deliveryTrackingController.trackMyVehicle
 );
 
 // ----------------------------------------
@@ -25,7 +26,7 @@ router.put(
     "/update/:vehicleId",
     // authMiddleware,
     // requireRole("staff", "manager", "admin"),
-    DeliveryTrackingController.updateTrackingStatus
+    deliveryTrackingController.updateTrackingStatus
 );
 
 // ----------------------------------------
@@ -36,7 +37,7 @@ router.get(
     "/",
     // authMiddleware,
     // requireRole("admin"),
-    DeliveryTrackingController.getAllTracking
+    deliveryTrackingController.getAllTracking
 );
 
 export default router;
