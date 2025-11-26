@@ -5,20 +5,36 @@ import { CreateOrderUseCase } from '../../application/usecases/order/CreateOrder
 import { GetOrderByIdUseCase } from '../../application/usecases/order/GetOrderByIdUseCase';
 import { GetOrdersByCustomerUseCase } from '../../application/usecases/order/GetOrdersByCustomerUseCase';
 import { UpdateOrderStatusUseCase } from '../../application/usecases/order/UpdateOrderStatusUseCase';
+import { logAudit } from '../../shared/services/auditLogger';
 
 const repo = new MongoOrderRepository();
 
 export class OrderController {
 
     static async create(req: Request, res: Response) {
-        const useCase = new CreateOrderUseCase(repo);
-        const created = await useCase.execute({
-            customerId: req.user!.userId,
-            vehicleId: req.body.vehicleId,
-            notes: req.body.notes,
-            status: 'PENDING'
-        });
-        res.status(201).json(created);
+        try {
+            const useCase = new CreateOrderUseCase(repo);
+            const created = await useCase.execute({
+                customerId: req.user!.userId,
+                vehicleId: req.body.vehicleId,
+                notes: req.body.notes,
+                status: 'PENDING'
+            });
+
+            await logAudit({
+                action: 'ORDER_UPDATED',
+                userId: req.user!.userId,
+                entityType: 'ORDER',
+                entityId: created.id,
+                success: true,
+                description: `Order ${created.id} created`,
+                metadata: { vehicleId: created.vehicleId }
+            });
+
+            res.status(201).json(created);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
     }
 
     static async getById(req: Request, res: Response) {
@@ -34,8 +50,21 @@ export class OrderController {
     }
 
     static async updateStatus(req: Request, res: Response) {
-        const useCase = new UpdateOrderStatusUseCase(repo);
-        const result = await useCase.execute(req.params.id, req.body.status);
-        res.json(result);
+        try {
+            const useCase = new UpdateOrderStatusUseCase(repo);
+            const result = await useCase.execute(req.params.id, req.body.status);
+            res.json(result);
+
+            await logAudit({
+                action: 'ORDER_UPDATED',
+                userId: req.user!.userId,
+                entityType: 'ORDER',
+                entityId: req.params.id,
+                success: true,
+                description: `Order ${req.params.id} status changed to ${req.body.status}`
+            });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
     }
 }

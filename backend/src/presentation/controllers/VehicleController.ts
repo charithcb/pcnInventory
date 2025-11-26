@@ -10,6 +10,7 @@ import { FilterVehiclesUseCase } from '../../application/usecases/vehicle/Filter
 import { UpdateVehicleAvailabilityUseCase } from '../../application/usecases/vehicle/UpdateVehicleAvailabilityUseCase';
 import { UpdateVehicleStockUseCase } from '../../application/usecases/vehicle/UpdateVehicleStockUseCase';
 import { GetLowStockVehiclesUseCase } from '../../application/usecases/vehicle/GetLowStockVehiclesUseCase';
+import { logAudit } from '../../shared/services/auditLogger';
 
 export class VehicleController {
 
@@ -24,6 +25,15 @@ export class VehicleController {
             const vehicle = await useCase.execute({
                 ...req.body,
                 lastUpdatedBy: req.user?.userId
+            });
+
+            await logAudit({
+                action: 'VEHICLE_CREATED',
+                userId: req.user?.userId,
+                entityType: 'VEHICLE',
+                entityId: vehicle.id,
+                success: true,
+                description: `Vehicle ${vehicle.make} ${vehicle.model} created`
             });
             res.status(201).json(vehicle);
         } catch (error: any) {
@@ -73,6 +83,14 @@ export class VehicleController {
                 ...req.body,
                 lastUpdatedBy: req.user?.userId
             });
+            await logAudit({
+                action: 'VEHICLE_UPDATED',
+                userId: req.user?.userId,
+                entityType: 'VEHICLE',
+                entityId: req.params.id,
+                success: true,
+                description: `Vehicle ${req.params.id} updated`
+            });
             res.json(updated);
         } catch (error: any) {
             res.status(400).json({ message: error.message });
@@ -88,6 +106,14 @@ export class VehicleController {
             const useCase = new DeleteVehicleUseCase(repo);
 
             const deleted = await useCase.execute(req.params.id);
+            await logAudit({
+                action: 'VEHICLE_DELETED',
+                userId: req.user?.userId,
+                entityType: 'VEHICLE',
+                entityId: req.params.id,
+                success: true,
+                description: `Vehicle ${req.params.id} deleted`
+            });
             res.json({ deleted: true });
         } catch (error: any) {
             res.status(400).json({ message: error.message });
@@ -103,6 +129,14 @@ export class VehicleController {
             const useCase = new UpdateVehicleAvailabilityUseCase(repo);
 
             const updated = await useCase.execute(req.params.id, req.body.status, req.user?.userId);
+            await logAudit({
+                action: 'VEHICLE_UPDATED',
+                userId: req.user?.userId,
+                entityType: 'VEHICLE',
+                entityId: req.params.id,
+                success: true,
+                description: `Vehicle ${req.params.id} availability changed to ${req.body.status}`
+            });
             res.json(updated);
         } catch (error: any) {
             res.status(400).json({ message: error.message });
@@ -118,6 +152,14 @@ export class VehicleController {
             const useCase = new UpdateVehicleStockUseCase(repo);
 
             const updated = await useCase.execute(req.params.id, Number(req.body.stock), req.user?.userId);
+            await logAudit({
+                action: 'VEHICLE_UPDATED',
+                userId: req.user?.userId,
+                entityType: 'VEHICLE',
+                entityId: req.params.id,
+                success: true,
+                description: `Vehicle ${req.params.id} stock updated to ${req.body.stock}`
+            });
             res.json(updated);
         } catch (error: any) {
             res.status(400).json({ message: error.message });

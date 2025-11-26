@@ -10,6 +10,11 @@ interface LoginUserRequest {
 
 interface LoginUserResponse {
     token: string;
+    user: {
+        id: string;
+        email: string;
+        role: string;
+    };
 }
 
 export class LoginUserUseCase {
@@ -38,6 +43,13 @@ export class LoginUserUseCase {
             role: user.role,
         });
 
-        return { token };
+        return {
+            token,
+            user: {
+                id: user.id!,
+                email: user.email,
+                role: user.role,
+            }
+        };
     }
 }
