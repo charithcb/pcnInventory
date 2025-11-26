@@ -19,7 +19,7 @@ export class GetCustomerHistoryUseCase {
             this.inquiryRepo.findByCustomer(userId)
         ]);
 
-        const ongoingShipments = deliveries.filter(d => d.currentStatus !== "COMPLETED");
+        const ongoingShipments = deliveries.filter(d => d.currentStatus !== "READY_FOR_PICKUP");
 
         return {
             orders,

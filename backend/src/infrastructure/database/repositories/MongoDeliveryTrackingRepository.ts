@@ -13,6 +13,11 @@ export class MongoDeliveryTrackingRepository implements IDeliveryTrackingReposit
         return found ? found.toObject() : null;
     }
 
+    async findByVehicle(vehicleId: string): Promise<DeliveryTracking | null> {
+        const found = await DeliveryTrackingModel.findOne({ vehicleId });
+        return found ? found.toObject() : null;
+    }
+
     async findByCustomer(customerId: string): Promise<DeliveryTracking[]> {
         const list = await DeliveryTrackingModel.find({ customerId });
         return list.map(i => i.toObject());

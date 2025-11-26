@@ -2,6 +2,7 @@ export type AuditAction =
     | 'LOGIN_SUCCESS'
     | 'LOGIN_FAILURE'
     | 'DOCUMENT_UPLOADED'
+    | 'TRACKING_CREATED'
     | 'TRACKING_STATUS_CHANGED'
     | 'VEHICLE_CREATED'
     | 'VEHICLE_UPDATED'

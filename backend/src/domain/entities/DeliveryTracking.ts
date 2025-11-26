@@ -22,11 +22,21 @@ export interface DeliveryTracking {
 
 export type TrackingStatus =
     | "PENDING"
-    | "PURCHASED"
+    | "PURCHASED_FROM_AUCTION"
     | "ON_FREIGHT"
-    | "ON_THE_WAY"
-    | "ARRIVED_LOCAL_HARBOR"
-    | "CUSTOMS_CLEARANCE"
-    | "CLEARED_CUSTOMS"
-    | "ARRIVED_YARD"
-    | "COMPLETED";
+    | "ON_THE_WAY_TO_LOCAL_HARBOR"
+    | "ARRIVED_AT_LOCAL_HARBOR"
+    | "CLEARED_FROM_CUSTOMS"
+    | "ARRIVED_AT_VEHICLE_YARD"
+    | "READY_FOR_PICKUP";
+
+export const TRACKING_STATUSES: TrackingStatus[] = [
+    "PENDING",
+    "PURCHASED_FROM_AUCTION",
+    "ON_FREIGHT",
+    "ON_THE_WAY_TO_LOCAL_HARBOR",
+    "ARRIVED_AT_LOCAL_HARBOR",
+    "CLEARED_FROM_CUSTOMS",
+    "ARRIVED_AT_VEHICLE_YARD",
+    "READY_FOR_PICKUP"
+];
