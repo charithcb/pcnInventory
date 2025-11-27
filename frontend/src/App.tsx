@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, ReactNode, useMemo, useState } from 'react';
 import {
+  Alert,
   AppBar,
   Box,
   Button,
@@ -25,6 +26,7 @@ import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import SecurityIcon from '@mui/icons-material/Security';
 import LoginIcon from '@mui/icons-material/Login';
+import { apiBaseUrl, loginCustomer, loginSystemUser, registerCustomer } from './api';
 
 const theme = createTheme({
   palette: {
@@ -82,11 +84,23 @@ const theme = createTheme({
   },
 });
 
+type AuthFeedback = { type: 'success' | 'error'; message: string };
+type Highlight = { icon: ReactNode; label: string; detail: string };
+
 function App() {
   const [authTab, setAuthTab] = useState(0);
   const [staffRole, setStaffRole] = useState<'STAFF' | 'ADMIN'>('STAFF');
+  const [customerLoginForm, setCustomerLoginForm] = useState({ email: '', password: '' });
+  const [registrationForm, setRegistrationForm] = useState({ name: '', email: '', password: '' });
+  const [systemLoginForm, setSystemLoginForm] = useState({ username: '', password: '' });
+  const [customerLoginLoading, setCustomerLoginLoading] = useState(false);
+  const [registrationLoading, setRegistrationLoading] = useState(false);
+  const [systemLoginLoading, setSystemLoginLoading] = useState(false);
+  const [customerLoginFeedback, setCustomerLoginFeedback] = useState<AuthFeedback | null>(null);
+  const [registrationFeedback, setRegistrationFeedback] = useState<AuthFeedback | null>(null);
+  const [systemLoginFeedback, setSystemLoginFeedback] = useState<AuthFeedback | null>(null);
 
-  const highlights = useMemo(
+  const highlights = useMemo<Highlight[]>(
     () => [
       {
         icon: <WorkspacePremiumIcon />,
@@ -106,6 +120,77 @@ function App() {
     ],
     [],
   );
+
+  const handleSystemFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setSystemLoginForm((previous) => ({ ...previous, [name]: value }));
+  };
+
+  const handleRegistrationFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setRegistrationForm((previous) => ({ ...previous, [name]: value }));
+  };
+
+  const handleCustomerLoginFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setCustomerLoginForm((previous) => ({ ...previous, [name]: value }));
+  };
+
+  const handleCustomerLogin = async (event: FormEvent) => {
+    event.preventDefault();
+    setCustomerLoginFeedback(null);
+    setCustomerLoginLoading(true);
+
+    try {
+      const { token } = await loginCustomer(customerLoginForm);
+      const preview = token ? `${token.slice(0, 12)}…` : 'received';
+      setCustomerLoginFeedback({ type: 'success', message: `Authenticated. Token ${preview}` });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to sign in.';
+      setCustomerLoginFeedback({ type: 'error', message });
+    } finally {
+      setCustomerLoginLoading(false);
+    }
+  };
+
+  const handleRegistration = async (event: FormEvent) => {
+    event.preventDefault();
+    setRegistrationFeedback(null);
+    setRegistrationLoading(true);
+
+    try {
+      const user = await registerCustomer(registrationForm);
+      setRegistrationFeedback({
+        type: 'success',
+        message: `Account created for ${user.name || 'customer'} (${user.email}).`,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to register at the moment.';
+      setRegistrationFeedback({ type: 'error', message });
+    } finally {
+      setRegistrationLoading(false);
+    }
+  };
+
+  const handleSystemLogin = async (event: FormEvent) => {
+    event.preventDefault();
+    setSystemLoginFeedback(null);
+    setSystemLoginLoading(true);
+
+    try {
+      const { user, token } = await loginSystemUser(systemLoginForm);
+      const preview = token ? `${token.slice(0, 12)}…` : 'issued';
+      setSystemLoginFeedback({
+        type: 'success',
+        message: `${user.role} session established. Token ${preview}`,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to authenticate system user.';
+      setSystemLoginFeedback({ type: 'error', message });
+    } finally {
+      setSystemLoginLoading(false);
+    }
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -215,7 +300,7 @@ function App() {
                   <CardContent sx={{ p: 4 }}>
                     <Tabs
                       value={authTab}
-                      onChange={(_, value) => setAuthTab(value)}
+                      onChange={(_, value: number) => setAuthTab(value)}
                       textColor="primary"
                       indicatorColor="primary"
                       variant="fullWidth"
@@ -226,33 +311,100 @@ function App() {
                     </Tabs>
 
                     {authTab === 0 && (
-                      <Stack spacing={2.5}>
-                        <TextField label="Email" type="email" fullWidth placeholder="operations@shipper.com" required />
-                        <TextField label="Password" type="password" fullWidth placeholder="••••••••" required />
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Typography variant="body2" color="text.secondary">
-                            Access fleet health and reservation tools instantly.
-                          </Typography>
-                          <Button variant="contained" color="primary" size="large">
-                            Sign in
-                          </Button>
+                      <Box component="form" onSubmit={handleCustomerLogin} noValidate>
+                        <Stack spacing={2.5}>
+                          <TextField
+                            label="Email"
+                            type="email"
+                            fullWidth
+                            placeholder="operations@shipper.com"
+                            required
+                            name="email"
+                            value={customerLoginForm.email}
+                            onChange={handleCustomerLoginFieldChange}
+                          />
+                          <TextField
+                            label="Password"
+                            type="password"
+                            fullWidth
+                            placeholder="••••••••"
+                            required
+                            name="password"
+                            value={customerLoginForm.password}
+                            onChange={handleCustomerLoginFieldChange}
+                          />
+                          {customerLoginFeedback && (
+                            <Alert severity={customerLoginFeedback.type}>{customerLoginFeedback.message}</Alert>
+                          )}
+                          <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Typography variant="body2" color="text.secondary">
+                              Access fleet health and reservation tools instantly.
+                            </Typography>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              size="large"
+                              type="submit"
+                              disabled={customerLoginLoading}
+                            >
+                              {customerLoginLoading ? 'Connecting…' : 'Sign in'}
+                            </Button>
+                          </Stack>
                         </Stack>
-                      </Stack>
+                      </Box>
                     )}
 
                     {authTab === 1 && (
-                      <Stack spacing={2.5}>
-                        <TextField label="Full name" fullWidth placeholder="Alex Carter" required />
-                        <TextField label="Work email" type="email" fullWidth placeholder="you@company.com" required />
-                        <TextField label="Password" type="password" fullWidth placeholder="Create a strong password" required />
-                        <Button variant="contained" color="primary" size="large" fullWidth>
-                          Create account
-                        </Button>
-                        <Typography variant="body2" color="text.secondary">
-                          Customer accounts gain booking visibility while staff and admin credentials remain centrally
-                          managed.
-                        </Typography>
-                      </Stack>
+                      <Box component="form" onSubmit={handleRegistration} noValidate>
+                        <Stack spacing={2.5}>
+                          <TextField
+                            label="Full name"
+                            fullWidth
+                            placeholder="Alex Carter"
+                            required
+                            name="name"
+                            value={registrationForm.name}
+                            onChange={handleRegistrationFieldChange}
+                          />
+                          <TextField
+                            label="Work email"
+                            type="email"
+                            fullWidth
+                            placeholder="you@company.com"
+                            required
+                            name="email"
+                            value={registrationForm.email}
+                            onChange={handleRegistrationFieldChange}
+                          />
+                          <TextField
+                            label="Password"
+                            type="password"
+                            fullWidth
+                            placeholder="Create a strong password"
+                            required
+                            name="password"
+                            value={registrationForm.password}
+                            onChange={handleRegistrationFieldChange}
+                          />
+                          {registrationFeedback && (
+                            <Alert severity={registrationFeedback.type}>{registrationFeedback.message}</Alert>
+                          )}
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            size="large"
+                            fullWidth
+                            type="submit"
+                            disabled={registrationLoading}
+                          >
+                            {registrationLoading ? 'Creating…' : 'Create account'}
+                          </Button>
+                          <Typography variant="body2" color="text.secondary">
+                            Customer accounts gain booking visibility while staff and admin credentials remain centrally
+                            managed.
+                          </Typography>
+                        </Stack>
+                      </Box>
                     )}
                   </CardContent>
                 </Card>
@@ -272,37 +424,76 @@ function App() {
                         </Box>
                       </Stack>
                       <Chip label="Restricted" color="secondary" variant="outlined" />
-                    </Stack>
+                  </Stack>
 
-                    <ToggleButtonGroup
-                      value={staffRole}
-                      exclusive
-                      color="primary"
-                      fullWidth
-                      onChange={(_, value) => value && setStaffRole(value)}
-                      sx={{ mb: 3 }}
-                    >
-                      <ToggleButton value="STAFF">Staff</ToggleButton>
-                      <ToggleButton value="ADMIN">Admin</ToggleButton>
-                    </ToggleButtonGroup>
+                  <ToggleButtonGroup
+                    value={staffRole}
+                    exclusive
+                    color="primary"
+                    fullWidth
+                    onChange={(_, value: 'STAFF' | 'ADMIN') => value && setStaffRole(value)}
+                    sx={{ mb: 3 }}
+                  >
+                    <ToggleButton value="STAFF">Staff</ToggleButton>
+                    <ToggleButton value="ADMIN">Admin</ToggleButton>
+                  </ToggleButtonGroup>
 
+                  <Box component="form" onSubmit={handleSystemLogin} noValidate>
                     <Stack spacing={2.5}>
-                      <TextField label="System username" fullWidth placeholder={`${staffRole.toLowerCase()}-access`} required />
-                      <TextField label="System password" type="password" fullWidth placeholder="••••••••" required />
-                      <Button variant="contained" color="secondary" size="large" fullWidth>
-                        Enter {staffRole === 'ADMIN' ? 'admin' : 'staff'} console
+                      <TextField
+                        label="System username"
+                        fullWidth
+                        placeholder={staffRole === 'ADMIN' ? 'pcn-admin' : 'pcn-staff'}
+                        required
+                        name="username"
+                        value={systemLoginForm.username}
+                        onChange={handleSystemFieldChange}
+                        helperText="Default credentials: pcn-admin / ChangeMeAdmin! or pcn-staff / ChangeMeStaff!"
+                      />
+                      <TextField
+                        label="System password"
+                        type="password"
+                        fullWidth
+                        placeholder="••••••••"
+                        required
+                        name="password"
+                        value={systemLoginForm.password}
+                        onChange={handleSystemFieldChange}
+                      />
+                      {systemLoginFeedback && (
+                        <Alert severity={systemLoginFeedback.type}>{systemLoginFeedback.message}</Alert>
+                      )}
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        size="large"
+                        fullWidth
+                        type="submit"
+                        disabled={systemLoginLoading}
+                      >
+                        {systemLoginLoading ? 'Verifying…' : `Enter ${staffRole === 'ADMIN' ? 'admin' : 'staff'} console`}
                       </Button>
                       <Typography variant="body2" color="text.secondary">
                         Use the credentials issued by operations leadership to reach the {staffRole.toLowerCase()} tools.
                       </Typography>
                     </Stack>
-                  </CardContent>
-                </Card>
-              </Stack>
-            </Grid>
+                  </Box>
+                </CardContent>
+              </Card>
+
+              <Card sx={{ border: '1px solid #e7d7ae' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Frontend is configured to call <strong>{apiBaseUrl}</strong>. Ensure the backend is running with CORS
+                    pointing to this origin.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Stack>
           </Grid>
-        </Container>
-      </Box>
+        </Grid>
+      </Container>
+    </Box>
     </ThemeProvider>
   );
 }
