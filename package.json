@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "npm run dev --prefix backend",
     "start": "npm run start --prefix backend",
-    "build": "npm run build --prefix backend"
+    "build": "npm run build --prefix backend",
+    "frontend": "node frontend/server.js"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.10"
