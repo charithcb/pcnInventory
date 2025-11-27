@@ -2,15 +2,23 @@
 
 :root {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: #f5f0e4;
-  color: #2d2418;
+  background-color: #f6f9fe;
+  color: #0f172a;
+  line-height: 1.5;
 }
 
 body {
   margin: 0;
-  background-color: #f5f0e4;
+  background-color: #f6f9fe;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
   color: inherit;
+  text-decoration: none;
+}
+
+* {
+  scroll-behavior: smooth;
 }
