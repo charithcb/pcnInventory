@@ -5,7 +5,10 @@
     "dev": "npm run dev --prefix backend",
     "start": "npm run start --prefix backend",
     "build": "npm run build --prefix backend",
-    "frontend": "node frontend/server.js"
+    "frontend:dev": "npm run dev --prefix frontend",
+    "frontend:build": "npm run build --prefix frontend",
+    "frontend:preview": "npm run preview --prefix frontend",
+    "frontend:typecheck": "npm run typecheck --prefix frontend"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.10"
