@@ -2,12 +2,14 @@ import { Request, Response } from 'express';
 import { MongoUserRepository } from '../../infrastructure/database/repositories/MongoUserRepository';
 import { RegisterUserUseCase } from '../../application/usecases/auth/RegisterUserUseCase';
 import { LoginUserUseCase } from '../../application/usecases/auth/LoginUserUseCase';
+import { LoginSystemUserUseCase } from '../../application/usecases/auth/LoginSystemUserUseCase';
 import { AppError } from '../../shared/errors/AppError';
 import { logAudit } from '../../shared/services/auditLogger';
 
 const userRepository = new MongoUserRepository();
 const registerUserUseCase = new RegisterUserUseCase(userRepository);
 const loginUserUseCase = new LoginUserUseCase(userRepository);
+const loginSystemUserUseCase = new LoginSystemUserUseCase();
 
 export class AuthController {
     static async register(req: Request, res: Response): Promise<void> {
@@ -64,6 +66,32 @@ export class AuthController {
                 metadata: { email }
             });
 
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({ message: error.message });
+            } else {
+                console.error(error);
+                res.status(500).json({ message: 'Internal server error' });
+            }
+        }
+    }
+
+    static async systemLogin(req: Request, res: Response): Promise<void> {
+        try {
+            const { username, password } = req.body;
+
+            const { token, user } = await loginSystemUserUseCase.execute({ username, password });
+
+            await logAudit({
+                action: 'SYSTEM_LOGIN',
+                userId: user.id,
+                entityType: 'USER',
+                entityId: user.id,
+                success: true,
+                description: `System user ${username} logged in as ${user.role}`,
+            });
+
+            res.json({ token, user });
+        } catch (error) {
             if (error instanceof AppError) {
                 res.status(error.statusCode).json({ message: error.message });
             } else {

@@ -6,6 +6,7 @@ const router = Router();
 
 router.post("/register", AuthController.register);
 router.post("/login", AuthController.login);
+router.post("/system-login", AuthController.systemLogin);
 
 router.get("/me", authenticateUser, (req: Request, res: Response) => {
     if (!req.user) {

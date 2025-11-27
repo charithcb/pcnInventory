@@ -10,7 +10,8 @@ export type AuditAction =
     | 'CUSTOMER_RECORD_UPDATED'
     | 'ORDER_UPDATED'
     | 'INQUIRY_STATUS_CHANGED'
-    | 'APPOINTMENT_UPDATED';
+    | 'APPOINTMENT_UPDATED'
+    | 'SYSTEM_LOGIN';
 
 export interface AuditLog {
     id?: string;
