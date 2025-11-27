@@ -1,34 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: #f8fafc;
+  background-color: #f5f0e4;
+  color: #2d2418;
 }
 
 body {
   margin: 0;
+  background-color: #f5f0e4;
 }
 
-.section-card {
-  @apply bg-white shadow-card rounded-xl border border-slate-100 p-6;
-}
-
-.badge {
-  @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold;
-}
-
-.badge-success {
-  @apply bg-emerald-50 text-emerald-700;
-}
-
-.badge-warning {
-  @apply bg-amber-50 text-amber-700;
-}
-
-.badge-info {
-  @apply bg-blue-50 text-blue-700;
+a {
+  color: inherit;
 }
