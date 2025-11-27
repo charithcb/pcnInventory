@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PCN Inventory | Intelligent Vehicle Operations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="logo">
+      <span class="logo-mark">PCN</span>
+      <div class="logo-copy">
+        <p class="eyebrow">Premium Car Network</p>
+        <p class="title">Inventory OS</p>
+      </div>
+    </div>
+    <nav>
+      <a href="#solutions">Solutions</a>
+      <a href="#inventory">Inventory</a>
+      <a href="#operations">Operations</a>
+      <a href="#portal">Customer Portal</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="actions">
+      <button class="ghost" id="logoutBtn">Sign out</button>
+      <button class="primary" onclick="document.getElementById('inventory').scrollIntoView({behavior:'smooth'})">View Inventory</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">Vehicle commerce, orchestrated</p>
+        <h1>Experience the frontend built for the PCN Inventory backend.</h1>
+        <p class="lede">Human-friendly by design, API-first under the hood. Modern storytelling inspired by Calcey, with real hooks into your authentication, vehicle catalog, and reservation workflows.</p>
+        <div class="cta-row">
+          <button class="primary" onclick="document.getElementById('portal').scrollIntoView({behavior:'smooth'})">Launch customer portal</button>
+          <button class="ghost" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Book a walkthrough</button>
+        </div>
+        <div class="pill-row">
+          <span class="pill">JWT-auth ready</span>
+          <span class="pill">Inventory search</span>
+          <span class="pill">Reservation flow</span>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="gradient-card">
+          <p class="eyebrow">Live funnel</p>
+          <h3>Deal velocity</h3>
+          <div class="stacked-metrics">
+            <div>
+              <p class="metric-label">Available today</p>
+              <p class="metric-value" id="availableCount">0</p>
+            </div>
+            <div>
+              <p class="metric-label">Avg. selling price</p>
+              <p class="metric-value" id="avgPrice">$0</p>
+            </div>
+          </div>
+          <div class="mini-grid">
+            <div class="tile">
+              <p>Hybrids</p>
+              <strong id="hybridCount">0</strong>
+            </div>
+            <div class="tile">
+              <p>EVs</p>
+              <strong id="evCount">0</strong>
+            </div>
+            <div class="tile">
+              <p>Performance</p>
+              <strong id="performanceCount">0</strong>
+            </div>
+          </div>
+        </div>
+        <div class="floating-card">
+          <p class="eyebrow">Authenticated user</p>
+          <div id="userBadge" class="badge muted">Guest</div>
+          <p class="small">Sign in to call protected endpoints like <code>/api/reservations</code> and <code>/api/admin/dashboard</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="solutions" class="section">
+      <div class="section-heading">
+        <p class="eyebrow">Solutions</p>
+        <h2>Crafted to match PCN's backend surface area.</h2>
+        <p class="description">Every UI block maps to a real route – from <code>/api/vehicles</code> browsing to JWT-powered reservation creation. Use the cards below to explore the experience.</p>
+      </div>
+      <div class="card-grid three">
+        <article class="card">
+          <p class="eyebrow">Catalog</p>
+          <h3>Smart inventory search</h3>
+          <p>Filter by make, price band, drivetrain, model year, and mileage. Results stream directly from <code>/api/vehicles/filter</code>.</p>
+        </article>
+        <article class="card">
+          <p class="eyebrow">Identity</p>
+          <h3>Registration & login</h3>
+          <p>Register new customers with <code>/api/auth/register</code>, sign in to receive JWTs, and hydrate the current session via <code>/api/auth/me</code>.</p>
+        </article>
+        <article class="card">
+          <p class="eyebrow">Lifecycle</p>
+          <h3>Reservations & follow-ups</h3>
+          <p>Authenticated customers can reserve inventory with a single click. Status-aware cards keep everyone aligned.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="inventory" class="section">
+      <div class="section-heading">
+        <p class="eyebrow">Inventory</p>
+        <h2>Discover vehicles in real time.</h2>
+        <p class="description">Search the live catalog exposed by your Express backend. Sorting and ranges are mapped to the same query parameters the API expects.</p>
+      </div>
+      <form id="filterForm" class="filter-bar">
+        <div>
+          <label>Search make or model</label>
+          <input type="text" name="search" placeholder="e.g. Tesla or Corolla" />
+        </div>
+        <div>
+          <label>Category</label>
+          <select name="category">
+            <option value="">Any</option>
+            <option value="EV">EV</option>
+            <option value="Hybrid">Hybrid</option>
+            <option value="SUV">SUV</option>
+            <option value="Sedan">Sedan</option>
+          </select>
+        </div>
+        <div class="stack">
+          <label>Price range (USD)</label>
+          <div class="inline">
+            <input type="number" name="minPrice" placeholder="Min" />
+            <input type="number" name="maxPrice" placeholder="Max" />
+          </div>
+        </div>
+        <div>
+          <label>Sort</label>
+          <select name="sort">
+            <option value="">Relevance</option>
+            <option value="price_asc">Price ↑</option>
+            <option value="price_desc">Price ↓</option>
+            <option value="year_desc">Newest</option>
+            <option value="year_asc">Oldest</option>
+          </select>
+        </div>
+        <button type="submit" class="primary">Run search</button>
+      </form>
+      <div id="inventoryList" class="card-grid four"></div>
+    </section>
+
+    <section id="operations" class="section split">
+      <div>
+        <p class="eyebrow">Operations</p>
+        <h2>Inventory health at a glance.</h2>
+        <p class="description">Use this panel to keep an eye on low stock, categories with traction, and the latest reservation intents.</p>
+        <div class="highlight" id="statusMessage">Pulling data from backend...</div>
+        <div class="stat-line">
+          <div>
+            <p class="metric-label">Low stock threshold</p>
+            <p class="metric-value" id="thresholdValue">3</p>
+          </div>
+          <div>
+            <p class="metric-label">Vehicles flagged</p>
+            <p class="metric-value" id="lowStockCount">0</p>
+          </div>
+        </div>
+        <ul id="lowStockList" class="pill-list"></ul>
+      </div>
+      <div class="glass-card">
+        <p class="eyebrow">Reservation stream</p>
+        <div id="reservationFeed" class="vertical-feed"></div>
+      </div>
+    </section>
+
+    <section id="portal" class="section">
+      <div class="section-heading">
+        <p class="eyebrow">Customer portal</p>
+        <h2>Authenticate and reserve in one place.</h2>
+        <p class="description">The forms below call the live authentication routes, store JWTs locally, and reuse them for customer-only reservation creation.</p>
+      </div>
+      <div class="portal-grid">
+        <form id="registerForm" class="card form-card">
+          <p class="eyebrow">Step 1</p>
+          <h3>Create an account</h3>
+          <label>Name<input name="name" required placeholder="Alex Johnson" /></label>
+          <label>Email<input name="email" type="email" required placeholder="you@example.com" /></label>
+          <label>Password<input name="password" type="password" required minlength="6" placeholder="••••••••" /></label>
+          <button class="primary" type="submit">Register</button>
+          <p class="small">Hits <code>/api/auth/register</code></p>
+          <p class="form-status" id="registerStatus"></p>
+        </form>
+        <form id="loginForm" class="card form-card">
+          <p class="eyebrow">Step 2</p>
+          <h3>Sign in</h3>
+          <label>Email<input name="email" type="email" required /></label>
+          <label>Password<input name="password" type="password" required /></label>
+          <button class="primary" type="submit">Login & store token</button>
+          <p class="small">Hits <code>/api/auth/login</code> then <code>/api/auth/me</code></p>
+          <p class="form-status" id="loginStatus"></p>
+        </form>
+        <form id="reservationForm" class="card form-card">
+          <p class="eyebrow">Step 3</p>
+          <h3>Reserve a vehicle</h3>
+          <label>Vehicle ID<input name="vehicleId" required placeholder="Paste from catalog" /></label>
+          <label>Notes<textarea name="notes" rows="3" placeholder="Color preferences, delivery timing..."></textarea></label>
+          <button class="primary" type="submit">Submit reservation</button>
+          <p class="small">Secured POST to <code>/api/reservations</code> with your JWT.</p>
+          <p class="form-status" id="reservationStatus"></p>
+        </form>
+      </div>
+
+      <div class="card-grid three" id="myReservations"></div>
+    </section>
+
+    <section id="contact" class="section contact">
+      <div>
+        <p class="eyebrow">Next steps</p>
+        <h2>Bring the PCN Inventory story to life.</h2>
+        <p class="description">This frontend is tuned to your backend contracts. Deploy both and you have a complete, secure, and inspiring experience.</p>
+      </div>
+      <div class="contact-cta">
+        <div>
+          <p class="metric-label">Base URL</p>
+          <p class="metric-value">http://localhost:5000/api</p>
+          <p class="small">Change <code>API_BASE_URL</code> in <code>frontend/app.js</code> to match your environment.</p>
+        </div>
+        <button class="primary" onclick="window.scrollTo({top:0,behavior:'smooth'})">Back to top</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
