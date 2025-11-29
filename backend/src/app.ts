@@ -1,6 +1,4 @@
 import express, { Express, Request, Response } from 'express';
-import dotenv from 'dotenv';
-import { connectDB } from './infrastructure/database/config/db';
 import { corsMiddleware } from './shared/middleware/corsMiddleware';
 
 import authRoutes from './presentation/routes/authRoutes';
@@ -10,7 +8,7 @@ import reservationRoutes from './presentation/routes/reservationRoutes';
 import inquiryRoutes from './presentation/routes/inquiryRoutes';
 import notificationRoutes from './presentation/routes/notificationRoutes';
 import appointmentRoutes from './presentation/routes/appointmentRoutes';
-import deliveryTrackingRoutes from './presentation/routes/deliveryTrackingRoutes';
+import deliveryTrackingRoutes from "./presentation/routes/deliveryTrackingRoutes";
 import documentRoutes from "./presentation/routes/documentRoutes";
 import invoiceRoutes from "./presentation/routes/invoiceRoutes";
 import adminDashboardRoutes from "./presentation/routes/adminDashboardRoutes";
@@ -19,18 +17,13 @@ import customerProfileRoutes from "./presentation/routes/customerProfileRoutes";
 import staffRoutes from "./presentation/routes/staffRoutes";
 import auditLogRoutes from "./presentation/routes/auditLogRoutes";
 
-dotenv.config();
-
 const app: Express = express();
 app.use(express.json());
 app.use(corsMiddleware);
 
-connectDB();
-
 app.get('/', (req: Request, res: Response) => {
     res.send('PCN Inventory Backend Running...');
 });
-
 
 app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
@@ -49,5 +42,3 @@ app.use("/api/staff", staffRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
 
 export default app;
-
-
