@@ -1,9 +1,13 @@
 import http from 'http';
+import dotenv from 'dotenv';
 import app from './app';
+import { connectDB } from './infrastructure/database/config/db';
+
+dotenv.config();
 
 const DEFAULT_PORT = Number(process.env.PORT) || 5000;
 
-const startServer = (port: number): void => {
+const createServer = (port: number): void => {
     const server = http.createServer(app);
 
     server.listen(port, () => {
@@ -14,7 +18,7 @@ const startServer = (port: number): void => {
         if (error.code === 'EADDRINUSE') {
             const nextPort = port + 1;
             console.warn(`Port ${port} is in use, trying port ${nextPort}...`);
-            server.close(() => startServer(nextPort));
+            server.close(() => createServer(nextPort));
             return;
         }
 
@@ -23,6 +27,14 @@ const startServer = (port: number): void => {
     });
 };
 
-startServer(DEFAULT_PORT);
+const startServer = async (): Promise<void> => {
+    try {
+        await connectDB();
+        createServer(DEFAULT_PORT);
+    } catch (error) {
+        console.error('Failed to initialize application:', error);
+        process.exit(1);
+    }
+};
 
-
+startServer();
